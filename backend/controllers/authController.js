@@ -47,6 +47,10 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
   res.json({ message: "Logged out" });
 };

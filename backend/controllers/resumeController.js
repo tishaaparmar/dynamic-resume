@@ -10,10 +10,22 @@ const jdp = jsondiffpatch.create({
 });
 
 export const listResumes = async (req, res) => {
-  const resumes = await Resume.find({ owner: req.userId }).select(
-    "title description updatedAt"
-  );
-  res.json(resumes);
+  try {
+    const resumes = await Resume.find({ owner: req.userId })
+      .select("title description updatedAt versions")
+      .lean();
+    const result = resumes.map((r) => ({
+      _id: r._id,
+      title: r.title,
+      description: r.description,
+      updatedAt: r.updatedAt,
+      versionCount: r.versions?.length || 0,
+    }));
+    res.json(result);
+  } catch (error) {
+    console.error("Error listing resumes:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 export const createResume = async (req, res) => {
@@ -203,7 +215,7 @@ export const listVersions = async (req, res) => {
       return res.status(400).json({ message: "Invalid resume ID format" });
     }
 
-    const resume = await Resume.findById(id).select("versions");
+    const resume = await Resume.findById(id).select("owner versions");
     if (!resume) return res.status(404).json({ message: "Resume not found" });
     if (String(resume.owner) !== String(req.userId))
       return res.status(403).json({ message: "Forbidden" });
@@ -218,13 +230,12 @@ export const listVersions = async (req, res) => {
 
 export const getVersion = async (req, res) => {
   try {
-    // ✅ Validate resume ID format
     const { id } = req.params;
     if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ message: "Invalid resume ID format" });
     }
 
-    const resume = await Resume.findById(id).select("versions");
+    const resume = await Resume.findById(id).select("owner versions");
     if (!resume) return res.status(404).json({ message: "Resume not found" });
     if (String(resume.owner) !== String(req.userId))
       return res.status(403).json({ message: "Forbidden" });
@@ -233,6 +244,39 @@ export const getVersion = async (req, res) => {
     res.json(version);
   } catch (error) {
     console.error("Error getting version:", error);
+    if (!res.headersSent) {
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+};
+
+export const restoreVersion = async (req, res) => {
+  try {
+    const { id, versionId } = req.params;
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid resume ID format" });
+    }
+
+    const resume = await Resume.findById(id);
+    if (!resume) return res.status(404).json({ message: "Resume not found" });
+    if (String(resume.owner) !== String(req.userId))
+      return res.status(403).json({ message: "Forbidden" });
+
+    const sourceVersion = resume.versions.id(versionId);
+    if (!sourceVersion) return res.status(404).json({ message: "Version not found" });
+
+    const version = {
+      _id: uuidv4(),
+      snapshot: sourceVersion.snapshot,
+      message: `Restored from: ${sourceVersion.message}`,
+      createdAt: new Date(),
+    };
+    resume.versions.push(version);
+    resume.current = sourceVersion.snapshot;
+    await resume.save();
+    res.json({ ok: true, version, title: resume.title });
+  } catch (error) {
+    console.error("Error restoring version:", error);
     if (!res.headersSent) {
       res.status(500).json({ message: "Server error" });
     }
@@ -252,7 +296,7 @@ export const compareVersions = async (req, res) => {
       return res.status(400).json({ message: "Both 'from' and 'to' version IDs are required" });
     }
 
-    const resume = await Resume.findById(id).select("versions");
+    const resume = await Resume.findById(id).select("owner versions");
     if (!resume) return res.status(404).json({ message: "Resume not found" });
     if (String(resume.owner) !== String(req.userId))
       return res.status(403).json({ message: "Forbidden" });

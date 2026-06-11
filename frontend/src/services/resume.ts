@@ -40,6 +40,11 @@ export const getVersion = async (id: string, versionId: string) => {
   return data;
 };
 
+export const restoreVersion = async (id: string, versionId: string) => {
+  const { data } = await api.post(`/resumes/${id}/versions/${versionId}/restore`);
+  return data;
+};
+
 export const compareVersions = async (id: string, fromId: string, toId: string) => {
   const { data } = await api.post(`/resumes/${id}/versions/compare`, {
     from: fromId,

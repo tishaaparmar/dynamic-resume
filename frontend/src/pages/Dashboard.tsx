@@ -1,6 +1,6 @@
 // src/pages/Dashboard.tsx
 import React, { useState, useEffect } from "react";
-import { Plus, FileText, Calendar, MoreVertical, Trash2, Edit, Copy } from "lucide-react";
+import { Plus, FileText, Calendar, MoreVertical, Trash2, Edit, Copy, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,75 +10,51 @@ import { useNavigate } from "react-router-dom";
 import { listResumes, createResume, deleteResume, duplicateResume } from "@/services/resume";
 import { BackButton } from "@/components/BackButton";
 import { useToast } from "@/hooks/use-toast";
+import { createDefaultSnapshot } from "@/types/resume";
 
 interface Resume {
   _id: string;
   title: string;
   description: string;
   updatedAt: string;
-  versions?: Array<{ _id: string; message: string; createdAt: string }>;
+  versionCount?: number;
 }
 
 const Dashboard: React.FC = () => {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const { user, loading: userLoading } = useUser();
+  const { user } = useUser();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Load resumes
   useEffect(() => {
-    const loadResumes = async () => {
-      if (!user) return;
-      
-      try {
-        setLoading(true);
-        const resumesData = await listResumes();
-        // Ensure each resume has a versions array
-        const safeResumes = resumesData.map(resume => ({
-          ...resume,
-          versions: resume.versions || []
-        }));
-        setResumes(safeResumes);
-      } catch (error) {
-        console.error("Error loading resumes:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load resumes",
-          variant: "destructive"
-        });
-        setResumes([]); // Set empty array on error
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (user) loadResumes();
+  }, [user]);
 
-    loadResumes();
-  }, [user, toast]);
-
-  useEffect(() => {
-    // If we've finished loading and there's no user, redirect to login
-    if (!userLoading && !user) navigate("/login");
-  }, [user, userLoading, navigate]);
+  const loadResumes = async () => {
+    try {
+      setLoading(true);
+      const resumesData = await listResumes();
+      setResumes(resumesData);
+    } catch (error) {
+      console.error("Error loading resumes:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load resumes",
+        variant: "destructive"
+      });
+      setResumes([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleCreateResume = async () => {
     try {
       setCreating(true);
-      const newResume = await createResume("New Resume", {
-        personalInfo: { name: "", email: "", phone: "", location: "", linkedin: "", website: "" },
-        summary: "",
-        experience: [],
-        education: [],
-        skills: []
-      });
-      // Refresh the resumes list
-      const resumesData = await listResumes();
-      const safeResumes = resumesData.map(resume => ({
-        ...resume,
-        versions: resume.versions || []
-      }));
-      setResumes(safeResumes);
+      const newResume = await createResume("New Resume", createDefaultSnapshot());
+      await loadResumes();
       navigate(`/resume/${newResume._id}`);
     } catch (error) {
       console.error("Error creating resume:", error);
@@ -113,13 +89,7 @@ const Dashboard: React.FC = () => {
   const handleDuplicateResume = async (resumeId: string) => {
     try {
       const duplicated = await duplicateResume(resumeId);
-      // Refresh the resumes list
-      const resumesData = await listResumes();
-      const safeResumes = resumesData.map(resume => ({
-        ...resume,
-        versions: resume.versions || []
-      }));
-      setResumes(safeResumes);
+      await loadResumes();
       toast({
         title: "Success",
         description: "Resume duplicated successfully",
@@ -149,7 +119,7 @@ const Dashboard: React.FC = () => {
     return date.toLocaleDateString();
   };
 
-  if (userLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -159,7 +129,6 @@ const Dashboard: React.FC = () => {
       </div>
     );
   }
-  if (!user) return null; // redirecting
 
   return (
     <div className="min-h-screen bg-background">
@@ -203,7 +172,7 @@ const Dashboard: React.FC = () => {
                   <Calendar className="w-6 h-6 text-secondary-foreground" />
                 </div>
                 <div>
-                  <p className="text-2xl font-semibold text-foreground">{resumes?.reduce((acc, r) => acc + (r.versions?.length || 0), 0) || 0}</p>
+                  <p className="text-2xl font-semibold text-foreground">{resumes?.reduce((acc, r) => acc + (r.versionCount || 0), 0) || 0}</p>
                   <p className="text-sm text-muted-foreground font-sans">Total Versions</p>
                 </div>
               </div>
@@ -268,6 +237,10 @@ const Dashboard: React.FC = () => {
                             <Edit className="w-4 h-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); navigate(`/timeline/${resume._id}`); }}>
+                            <History className="w-4 h-4 mr-2" />
+                            Version History
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDuplicateResume(resume._id); }}>
                             <Copy className="w-4 h-4 mr-2" />
                             Duplicate
@@ -287,8 +260,20 @@ const Dashboard: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         <Badge variant="default" className="bg-primary/10 text-primary">Active</Badge>
-                        <span className="text-sm text-muted-foreground">{resume.versions?.length || 0} versions</span>
+                        <span className="text-sm text-muted-foreground">{resume.versionCount || 0} versions</span>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/timeline/${resume._id}`);
+                        }}
+                      >
+                        <History className="w-3 h-3 mr-1" />
+                        History
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

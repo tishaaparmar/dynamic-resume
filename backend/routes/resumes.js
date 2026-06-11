@@ -8,6 +8,7 @@ import {
   deleteResume,
   listVersions,
   getVersion,
+  restoreVersion,
   compareVersions,
   exportResumeJSON,
   createShareLink,
@@ -30,6 +31,7 @@ router.post("/:id/duplicate", duplicateResume); // ✅ Duplicate resume
 
 router.get("/:id/versions", listVersions);
 router.get("/:id/versions/:versionId", getVersion);
+router.post("/:id/versions/:versionId/restore", restoreVersion);
 router.post("/:id/versions/compare", compareVersions);
 
 router.post("/:id/export", exportResumeJSON);
