@@ -65,15 +65,17 @@ function sectionHeading(title, template) {
   return `<h2 class="section-heading classic">${escapeHtml(title)}</h2>`;
 }
 
-function entryRow(left, right, sub) {
+function entryRow(title, subtitle, rightTop, rightBottom) {
   return `<div class="entry">
-    <div class="entry-main">
-      <div class="entry-left">
-        <div class="entry-title">${left}</div>
-        ${sub ? `<div class="entry-sub">${sub}</div>` : ""}
-      </div>
-      ${right ? `<div class="entry-right">${right}</div>` : ""}
+    <div class="entry-row">
+      <span class="entry-title">${escapeHtml(title)}</span>
+      ${rightTop ? `<span class="entry-right-top">${escapeHtml(rightTop)}</span>` : ""}
     </div>
+    ${(subtitle || rightBottom) ? `
+    <div class="entry-row sub-row">
+      <span class="entry-subtitle">${escapeHtml(subtitle)}</span>
+      ${rightBottom ? `<span class="entry-right-bottom">${escapeHtml(rightBottom)}</span>` : ""}
+    </div>` : ""}
   </div>`;
 }
 
@@ -86,58 +88,67 @@ function bulletList(bullets, fallback) {
 function getTemplateStyles(template) {
   const base = `
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { color: #1a1a1a; font-size: 10.5pt; line-height: 1.5; background: white; }
-    .section { margin-bottom: 14px; page-break-inside: avoid; }
+    body { color: #1f2937; font-size: 10.5pt; line-height: 1.45; background: white; -webkit-print-color-adjust: exact; }
+    .section { margin-bottom: 12px; page-break-inside: avoid; }
     .section-heading { font-size: 11pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 14px 0 8px; page-break-after: avoid; }
-    .section-heading.classic { border-bottom: 1px solid #1a1a1a; padding-bottom: 3px; }
+    
+    .section-heading.classic { border-bottom: 1px solid #111827; padding-bottom: 2px; color: #111827; }
     .section-heading.modern { border-left: 4px solid #2563eb; padding-left: 8px; color: #1d4ed8; }
-    .section-heading.minimal { color: #64748b; letter-spacing: 0.15em; font-size: 9pt; border: none; }
-    .section-heading.executive { background: #1e293b; color: white; padding: 6px 10px; margin-top: 16px; }
-    .entry { margin-bottom: 10px; page-break-inside: avoid; }
-    .entry-main { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-    .entry-left { flex: 1; }
-    .entry-title { font-weight: 600; font-size: 10.5pt; }
-    .entry-sub { font-style: italic; color: #475569; font-size: 9.5pt; margin-top: 1px; }
-    .entry-right { text-align: right; font-size: 9.5pt; color: #64748b; white-space: nowrap; }
-    .bullets { margin: 4px 0 0 16px; padding: 0; }
-    .bullets li { margin-bottom: 2px; font-size: 10pt; color: #334155; }
-    .skill-row { font-size: 10pt; margin-bottom: 3px; }
-    .skill-cat { font-weight: 700; }
-    p.summary { text-align: justify; color: #334155; font-size: 10pt; line-height: 1.55; }
-    .edu-detail { font-size: 9.5pt; color: #475569; margin-top: 2px; }
+    .section-heading.minimal { color: #6b7280; letter-spacing: 0.15em; font-size: 9.5pt; border-bottom: 1px solid #f3f4f6; padding-bottom: 2px; }
+    .section-heading.executive { background: #1e293b; color: white; padding: 4px 8px; margin-top: 14px; font-size: 10.5pt; }
+    
+    .entry { margin-bottom: 8px; page-break-inside: avoid; }
+    .entry-row { display: flex; justify-content: space-between; align-items: baseline; }
+    .entry-title { font-weight: 700; font-size: 10.5pt; color: #111827; }
+    .entry-right-top { font-weight: 600; font-size: 9.5pt; color: #374151; white-space: nowrap; }
+    .sub-row { margin-top: 2px; }
+    .entry-subtitle { font-style: italic; font-size: 9.5pt; color: #4b5563; }
+    .entry-right-bottom { font-size: 9pt; color: #6b7280; white-space: nowrap; }
+    
+    .bullets { margin: 3px 0 0 16px; padding: 0; list-style-type: disc; }
+    .bullets li { margin-bottom: 1.5px; font-size: 10pt; color: #374151; line-height: 1.4; }
+    
+    .skill-row { font-size: 10pt; margin-bottom: 4px; color: #374151; }
+    .skill-cat { font-weight: 700; color: #111827; }
+    p.summary { text-align: justify; color: #374151; font-size: 10pt; line-height: 1.45; }
+    .edu-detail { font-size: 9.5pt; color: #4b5563; margin-top: 2px; line-height: 1.35; }
   `;
 
   if (template === "classic") {
     return base + `
-      body { font-family: 'Times New Roman', Georgia, serif; padding: 28px 36px; }
+      @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap');
+      body { font-family: 'Crimson Pro', 'Times New Roman', Georgia, serif; padding: 20mm 20mm; }
       .header { text-align: center; margin-bottom: 16px; page-break-inside: avoid; }
-      .header h1 { font-size: 22pt; font-weight: 700; margin-bottom: 6px; }
-      .contact { font-size: 9pt; color: #475569; line-height: 1.6; }
+      .header h1 { font-size: 24pt; font-weight: 700; margin-bottom: 4px; color: #111827; }
+      .contact { font-size: 9.5pt; color: #4b5563; line-height: 1.5; }
     `;
   }
   if (template === "modern") {
     return base + `
-      body { font-family: Arial, Helvetica, sans-serif; padding: 28px 36px; }
-      .header { border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 16px; }
-      .header h1 { font-size: 24pt; font-weight: 700; color: #0f172a; }
-      .contact { font-size: 9pt; color: #64748b; margin-top: 6px; }
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+      body { font-family: 'Inter', Arial, sans-serif; padding: 20mm 20mm; }
+      .header { border-bottom: 2px solid #2563eb; padding-bottom: 8px; margin-bottom: 16px; }
+      .header h1 { font-size: 26pt; font-weight: 800; color: #111827; }
+      .contact { font-size: 9.5pt; color: #4b5563; margin-top: 4px; }
     `;
   }
   if (template === "minimal") {
     return base + `
-      body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 36px 44px; }
-      .header { text-align: center; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; }
-      .header h1 { font-size: 20pt; font-weight: 300; letter-spacing: 0.05em; }
-      .contact { font-size: 8.5pt; color: #94a3b8; margin-top: 8px; }
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+      body { font-family: 'Inter', Arial, sans-serif; padding: 20mm 20mm; }
+      .header { text-align: center; padding-bottom: 12px; margin-bottom: 16px; border-bottom: 1px solid #f3f4f6; }
+      .header h1 { font-size: 20pt; font-weight: 300; letter-spacing: 0.12em; text-transform: uppercase; color: #111827; }
+      .contact { font-size: 9pt; color: #6b7280; margin-top: 6px; font-weight: 300; }
     `;
   }
   // executive
   return base + `
-    body { font-family: Arial, Helvetica, sans-serif; padding: 0; }
-    .header { background: #1e293b; color: white; padding: 24px 36px; margin-bottom: 20px; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', Arial, sans-serif; padding: 0; }
+    .header { background: #1e293b; color: white; padding: 8mm 20mm; margin-bottom: 16px; }
     .header h1 { font-size: 26pt; font-weight: 700; color: white; }
-    .contact { font-size: 9pt; color: #cbd5e1; margin-top: 8px; }
-    .body-content { padding: 0 36px 28px; }
+    .contact { font-size: 9.5pt; color: #cbd5e1; margin-top: 4px; }
+    .body-content { padding: 0 20mm 20mm; }
   `;
 }
 
@@ -155,7 +166,7 @@ export async function resumeSnapshotToHTML(snapshot) {
     p.website && escapeHtml(p.website),
   ].filter(Boolean);
 
-  const contactHtml = contacts.join(" &nbsp;|&nbsp; ");
+  const contactHtml = contacts.join("   &bull;   ");
 
   let body = "";
 
@@ -167,13 +178,17 @@ export async function resumeSnapshotToHTML(snapshot) {
     body += `<div class="section">${sectionHeading("Education", template)}`;
     data.education.forEach((edu) => {
       body += entryRow(
-        escapeHtml(edu.school),
-        `${escapeHtml(edu.location)}${edu.period ? `<br>${escapeHtml(edu.period)}` : ""}`,
-        escapeHtml(edu.degree)
+        edu.school,
+        edu.degree ? `${edu.degree}${edu.minor ? `, Minor: ${edu.minor}` : ""}` : (edu.minor ? `Minor: ${edu.minor}` : ""),
+        edu.period,
+        edu.location
       );
-      if (edu.minor) body += `<div class="edu-detail">Minor: ${escapeHtml(edu.minor)}</div>`;
-      if (edu.coursework) body += `<div class="edu-detail">Relevant Coursework: ${escapeHtml(edu.coursework)}</div>`;
-      if (edu.gpa) body += `<div class="edu-detail"><strong>CGPA:</strong> ${escapeHtml(edu.gpa)}</div>`;
+      if (edu.coursework || edu.gpa) {
+        body += `<div class="edu-detail">`;
+        if (edu.coursework) body += `<div><strong>Relevant Coursework:</strong> ${escapeHtml(edu.coursework)}</div>`;
+        if (edu.gpa) body += `<div><strong>GPA / Percentage:</strong> ${escapeHtml(edu.gpa)}</div>`;
+        body += `</div>`;
+      }
     });
     body += `</div>`;
   }
@@ -192,9 +207,10 @@ export async function resumeSnapshotToHTML(snapshot) {
     body += `<div class="section">${sectionHeading("Work Experience", template)}`;
     data.experience.forEach((exp) => {
       body += entryRow(
-        escapeHtml(exp.title || exp.company),
-        `${escapeHtml(exp.location)}${exp.period ? `<br>${escapeHtml(exp.period)}` : ""}`,
-        exp.company && exp.title ? escapeHtml(exp.company) : ""
+        exp.title || exp.company,
+        exp.company && exp.title ? exp.company : "",
+        exp.period,
+        exp.location
       );
       body += bulletList(exp.bullets, exp.description);
     });
@@ -205,9 +221,10 @@ export async function resumeSnapshotToHTML(snapshot) {
     body += `<div class="section">${sectionHeading("Internships", template)}`;
     data.internships.forEach((exp) => {
       body += entryRow(
-        escapeHtml(exp.title || exp.company),
-        `${escapeHtml(exp.location)}${exp.period ? `<br>${escapeHtml(exp.period)}` : ""}`,
-        escapeHtml(exp.company)
+        exp.title || exp.company,
+        exp.company,
+        exp.period,
+        exp.location
       );
       body += bulletList(exp.bullets, exp.description);
     });
@@ -218,9 +235,10 @@ export async function resumeSnapshotToHTML(snapshot) {
     body += `<div class="section">${sectionHeading("Projects", template)}`;
     data.projects.forEach((proj) => {
       body += entryRow(
-        `<strong>${escapeHtml(proj.name)}</strong>`,
+        proj.name,
+        proj.technologies ? `Technologies: ${proj.technologies}` : "",
         "",
-        proj.technologies ? `<em>Technologies: ${escapeHtml(proj.technologies)}</em>` : ""
+        ""
       );
       body += bulletList(proj.bullets, proj.description);
     });
@@ -230,7 +248,7 @@ export async function resumeSnapshotToHTML(snapshot) {
   if (sec.certifications && data.certifications.length) {
     body += `<div class="section">${sectionHeading("Certifications", template)}`;
     data.certifications.forEach((c) => {
-      body += entryRow(escapeHtml(c.name), escapeHtml(c.date), escapeHtml(c.issuer));
+      body += entryRow(c.name, c.issuer, c.date, "");
       if (c.description) body += `<div class="edu-detail">${escapeHtml(c.description)}</div>`;
     });
     body += `</div>`;
@@ -239,7 +257,7 @@ export async function resumeSnapshotToHTML(snapshot) {
   if (sec.achievements && data.achievements.length) {
     body += `<div class="section">${sectionHeading("Achievements", template)}`;
     data.achievements.forEach((a) => {
-      body += entryRow(escapeHtml(a.title), escapeHtml(a.date), "");
+      body += entryRow(a.title, "", a.date, "");
       if (a.description) body += `<div class="edu-detail">${escapeHtml(a.description)}</div>`;
     });
     body += `</div>`;
@@ -249,8 +267,9 @@ export async function resumeSnapshotToHTML(snapshot) {
     body += `<div class="section">${sectionHeading("Leadership & Activities", template)}`;
     data.leadership.forEach((l) => {
       body += entryRow(
-        escapeHtml(`${l.role}${l.organization ? ` — ${l.organization}` : ""}`),
-        escapeHtml(l.period),
+        l.role,
+        l.organization,
+        l.period,
         ""
       );
       if (l.description) body += `<div class="edu-detail">${escapeHtml(l.description)}</div>`;
@@ -278,7 +297,7 @@ export async function htmlToPdfBuffer(html) {
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: { top: "12mm", right: "12mm", bottom: "12mm", left: "12mm" },
+      margin: { top: "0mm", right: "0mm", bottom: "0mm", left: "0mm" },
     });
     const buffer = Buffer.isBuffer(pdfBuffer) ? pdfBuffer : Buffer.from(pdfBuffer);
     if (!buffer?.length || buffer.slice(0, 4).toString() !== "%PDF") {
