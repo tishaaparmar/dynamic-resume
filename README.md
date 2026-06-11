@@ -1,4 +1,4 @@
-# ResumeVault - Professional Resume Builder
+# Resume.io - Build Better Resumes Faster
 
 A full-stack resume builder application with version control, PDF export, and timeline tracking. Built with React, Node.js, Express, and MongoDB.
 
