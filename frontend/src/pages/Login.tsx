@@ -46,7 +46,7 @@ const Login = () => {
 
   return (
     <AuthCard
-      title="Sign in to ResumeVault"
+      title="Sign in to Resume.io"
       description="Enter your credentials to access your professional resume vault."
     >
       <form onSubmit={handleLogin} className="space-y-6">

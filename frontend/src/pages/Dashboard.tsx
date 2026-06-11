@@ -20,6 +20,28 @@ interface Resume {
   versionCount?: number;
 }
 
+const Logo: React.FC = () => (
+  <div className="flex items-center space-x-2.5">
+    <svg className="w-8 h-8 filter drop-shadow-sm" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#f9a882" />
+          <stop offset="100%" stopColor="#fccba1" />
+        </linearGradient>
+      </defs>
+      <rect x="4" y="2" width="24" height="28" rx="4.5" fill="url(#logoGrad)" />
+      <path d="M20 2L28 10H20V2Z" fill="#ffedd5" opacity="0.95" />
+      <path d="M20 2V10H28" stroke="white" strokeWidth="1.2" strokeLinejoin="round" />
+      <line x1="8" y1="14" x2="24" y2="14" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="8" y1="20" x2="24" y2="20" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+      <line x1="8" y1="26" x2="17" y2="26" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+    <span className="text-xl font-bold tracking-tight text-slate-800 font-sans">
+      Resume<span className="text-orange-500">.io</span>
+    </span>
+  </div>
+);
+
 const Dashboard: React.FC = () => {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(true);
@@ -132,19 +154,19 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm">
+      <header className="border-b border-orange-100/50 bg-white/70 backdrop-blur-md sticky top-0 z-50 transition-all duration-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
             <BackButton to="/" label="Home" />
-            <div>
-              <h1 className="text-2xl font-semibold text-foreground">ResumeVault</h1>
-              <p className="text-muted-foreground font-sans">Hello, {user.name}</p>
-            </div>
+            <Logo />
           </div>
-          <Button className="btn-hero" onClick={handleCreateResume} disabled={creating}>
-            <Plus className="w-4 h-4 mr-2" />
-            {creating ? "Creating..." : "New Resume"}
-          </Button>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm font-medium text-slate-600 font-sans hidden sm:inline">Hello, {user.name}</span>
+            <Button className="btn-hero rounded-lg" onClick={handleCreateResume} disabled={creating}>
+              <Plus className="w-4 h-4 mr-2" />
+              {creating ? "Creating..." : "New Resume"}
+            </Button>
+          </div>
         </div>
       </header>
 

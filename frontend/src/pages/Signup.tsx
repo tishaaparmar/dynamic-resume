@@ -39,7 +39,7 @@ export const Signup = () => {
 
       toast({
         title: "Account created!",
-        description: "Welcome to ResumeVault. Your journey starts now.",
+        description: "Welcome to Resume.io. Your journey starts now.",
       });
 
       navigate("/"); // ✅ Redirect to Index page
@@ -55,7 +55,7 @@ export const Signup = () => {
   return (
     <AuthCard
       title="Create your account"
-      description="Join ResumeVault to start building and versioning your professional story."
+      description="Join Resume.io to start building and versioning your professional story."
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
